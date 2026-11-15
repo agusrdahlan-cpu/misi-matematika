@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Misi Matematika · Alfa Centauri</title>
+<style>
+:root{
+  --bg:#F3F6FF; --card:#FFFFFF; --ink:#1B2340; --muted:#6B7499;
+  --blue:#2F6BFF; --blue-d:#1C4CD1; --orange:#FF8A3D; --yellow:#FFC83D;
+  --pink:#FF6B9A; --green:#22C55E; --green-bg:#E3F9EC; --red:#FF4D6D; --red-bg:#FFE8ED;
+  --shadow:0 6px 0 rgba(27,35,64,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;justify-content:center}
+#app{width:100%;max-width:480px;padding:14px max(16px,env(safe-area-inset-right,0px)) 96px max(16px,env(safe-area-inset-left,0px))}
+.card{background:var(--card);border-radius:22px;padding:16px;margin:12px 0;box-shadow:var(--shadow)}
+h1{font-size:1.35rem;margin:10px 0 6px;font-weight:900}
+h2{font-size:1.05rem;margin:14px 0 8px;font-weight:800}
+.small{font-size:.8rem;color:var(--muted)}
+.row{display:flex;align-items:center;gap:10px}
+.between{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chip{background:var(--yellow);color:var(--ink);border-radius:99px;padding:6px 12px;font-weight:800;font-size:.85rem;white-space:nowrap}
+.chip.blue{background:#DDE7FF;color:var(--blue-d)}
+.chip.pink{background:#FFE0EA;color:#C2185B}
+.bar{height:14px;background:#E3E8F7;border-radius:99px;overflow:hidden}
+.bar>div{height:100%;background:linear-gradient(90deg,var(--blue),var(--orange));border-radius:99px;transition:width .4s}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:18px;padding:15px;font-size:1.05rem;width:100%;cursor:pointer;font-weight:900;box-shadow:0 6px 0 var(--blue-d);letter-spacing:.3px}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--blue-d)}
+.iconbtn{background:#fff;border:0;border-radius:14px;width:40px;height:40px;font-size:1.1rem;box-shadow:var(--shadow);cursor:pointer}
+
+/* Mascot */
+.mascot{width:72px;height:72px;flex:0 0 72px;border-radius:50%;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+.mascot.big{width:110px;height:110px;flex:0 0 110px}
+.bubble{background:#fff;border-radius:18px;padding:12px 14px;box-shadow:var(--shadow);font-weight:700;font-size:.95rem;line-height:1.4;position:relative}
+
+/* Home: map tiles (Roblox-like) */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{border-radius:22px;padding:14px;color:#fff;position:relative;overflow:hidden;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 0 rgba(27,35,64,.18);cursor:pointer;border:0;text-align:left;font-family:inherit}
+.tile:active{transform:translateY(4px);box-shadow:0 3px 0 rgba(27,35,64,.18)}
+.tile .ico{font-size:2.2rem}
+.tile .name{font-weight:900;font-size:1.05rem;line-height:1.2}
+.tile .sub{font-size:.8rem;opacity:.95}
+.tile .play{background:#fff;color:var(--ink);border-radius:12px;padding:6px 10px;font-weight:900;font-size:.8rem;align-self:flex-start}
+.tile.locked{background:#D9DEEE !important;color:var(--muted);cursor:not-allowed;box-shadow:none}
+.tile.locked .play{background:#EEF1FA;color:var(--muted)}
+.tile::after{content:"";position:absolute;right:-18px;top:-18px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.18)}
+.t-lin{background:linear-gradient(160deg,#4D8BFF,#2F6BFF)}
+.t-pct{background:linear-gradient(160deg,#FFB35C,#FF8A3D)}
+.t-kuad{background:linear-gradient(160deg,#FF86B0,#FF4F8B)}
+
+/* Badges */
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bdg{background:#F5F7FD;border-radius:18px;padding:12px 6px;text-align:center;font-size:.8rem;font-weight:700}
+.bdg .e{font-size:1.8rem;display:block;margin-bottom:4px}
+.bdg.locked{opacity:.4;filter:grayscale(1)}
+
+/* Bottom nav */
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:#fff;display:flex;justify-content:space-around;padding:8px 0 12px;box-shadow:0 -4px 16px rgba(27,35,64,.08);border-radius:22px 22px 0 0}
+.nav button{background:none;border:0;font-family:inherit;font-size:.75rem;font-weight:800;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 14px}
+.nav button .e{font-size:1.4rem}
+.nav button.on{color:var(--blue)}
+
+/* Quiz */
+.opt{display:flex;align-items:center;gap:12px;width:100%;margin:10px 0;padding:14px;border-radius:18px;border:0;background:#F5F7FD;color:var(--ink);font-size:1.05rem;font-weight:800;text-align:left;cursor:pointer;box-shadow:0 4px 0 #DDE2F2;font-family:inherit}
+.opt .L{width:30px;height:30px;border-radius:10px;background:#fff;display:grid;place-items:center;font-size:.85rem;color:var(--blue);flex:0 0 30px}
+.opt:disabled{cursor:default}
+.opt.ok{background:var(--green-bg);box-shadow:0 4px 0 #A7E8C0}
+.opt.ok .L{color:var(--green)}
+.opt.bad{background:var(--red-bg);box-shadow:0 4px 0 #F7B3C1}
+.opt.bad .L{color:var(--red)}
+.q{font-size:1.2rem;line-height:1.6;font-weight:800;white-space:pre-line}
+.feedback{border-radius:18px;padding:12px 14px;margin-top:12px;font-size:.92rem;line-height:1.6}
+.feedback.ok{background:var(--green-bg)}
+.feedback.bad{background:var(--red-bg)}
+.pop{animation:pop .35s}
+@keyframes pop{0%{transform:scale(.96);opacity:.3}100%{transform:scale(1);opacity:1}}
+.label{display:inline-block;background:#EEF2FF;color:var(--blue-d);border-radius:10px;padding:4px 10px;font-size:.78rem;font-weight:800}
+input{width:100%;padding:14px;border-radius:16px;border:2px solid #DDE2F2;background:#F9FAFF;color:var(--ink);font-size:1rem;font-family:inherit}
+.pop-ov{position:fixed;inset:0;background:rgba(27,35,64,.25);display:flex;align-items:center;justify-content:center;z-index:50;animation:fade .2s}
+.pop-box{background:#fff;border-radius:26px;padding:18px 20px;text-align:center;box-shadow:0 10px 0 rgba(27,35,64,.15);max-width:300px;width:82%;animation:bounce .45s cubic-bezier(.2,1.6,.4,1)}
+.pop-box .stk{width:120px;height:120px;margin:0 auto}
+.pop-box h2{margin:8px 0 4px;font-size:1.3rem;font-weight:900}
+.pop-box p{margin:0;font-size:.95rem;color:var(--muted);font-weight:700}
+.pop-ov.sad .pop-box{box-shadow:0 10px 0 rgba(127,178,255,.35)}
+.cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:3px;animation:fall 1.5s linear forwards;z-index:51;pointer-events:none}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes bounce{0%{transform:scale(.6);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.9}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav class="nav" id="nav" style="display:none">
+  <button id="n-home" onclick="home()"><span class="e">🏠</span>Beranda</button>
+  <button id="n-badge" onclick="showBadges()"><span class="e">🏆</span>Lencana</button>
+  <button id="n-data" onclick="showData()"><span class="e">📊</span>Progres</button>
+</nav>
+<script>
+/* ---------- Konfigurasi ---------- */
+const TOPIC={lin:{name:'Persamaan Linear',ico:'🧩',cls:'t-lin'},pct:{name:'Persentase',ico:'🛒',cls:'t-pct'},kuad:{name:'Persamaan Kuadrat',ico:'🎯',cls:'t-kuad'}};
+const SOON=[{name:'Geometri',ico:'📐'},{name:'Statistika',ico:'📈'}];
+const BADGES={
+  first:['🚀','Misi Pertama','Selesaikan satu misi'],
+  perfect:['💎','Tanpa Cela','Selesaikan misi tanpa jawaban salah'],
+  combo5:['🔥','Api Beruntun','5 jawaban benar berturut-turut'],
+  pro50:['🏆','50 Jawaban Benar','Total 50 jawaban benar'],
+  lvl3:['⚔️','Naik Kelas','Capai tingkat 3 di satu topik'],
+  day3:['📅','Tiga Hari','Belajar 3 hari berturut-turut']
+};
+const LEVELS=[0,50,120,220,350,520,750,1000,1300,1700];
+const KEY='misi-mat-proto-v1';
+const PRAISE=['Gokil, bener banget! 🔥','Mantap, otak kamu lagi on fire! 🚀','Yes, gas terus! ✨','Anjay, pinter banget 😎'];
+const OOPS=['Hampir! Cek penjelasannya dulu ya 👀','Oops, bukan yang itu. Gapapa, soal ini balik lagi kok 💪','Santai, salah itu bagian dari naik level 🎮'];
+
+/* ---------- Cerita per level: setiap bab terbuka saat tingkat kesulitan naik ---------- */
+const STORY={
+  lin:{world:'Kota Persamaan',ch:[
+    {t:'Gerbang Pertama',s:'Gerbang Kota Persamaan terkunci. Centi harus menemukan nilai x supaya gerbangnya kebuka. Pelan-pelan aja, satu langkah sekali.'},
+    {t:'Jembatan Timbangan',s:'Jembatan ini cuma kuat kalau kedua sisinya seimbang. Pindahin suku dengan hati-hati, jangan sampai timpang!'},
+    {t:'Menara Dua Sisi',s:'Di menara terakhir, x ada di dua sisi sekaligus. Kumpulin dulu semua suku x, baru dihitung. Kamu pasti bisa!'}]},
+  pct:{world:'Pasar Diskon',ch:[
+    {t:'Stan Kenaikan',s:'Harga-harga di pasar lagi naik. Centi perlu tahu seberapa besar kenaikannya biar bisa ngitung uang belanjanya.'},
+    {t:'Diskon Berlapis',s:'Ada diskon buat semua barang! Tapi hati-hati, diskon bisa datang setelah harga naik, jadi urutannya penting.'},
+    {t:'Harga Naik-Turun',s:'Pedagang ini tricky banget: harga naik lalu turun lagi. Ingat, persen kedua dihitung dari harga yang sudah berubah.'}]},
+  kuad:{world:'Puncak Parabola',ch:[
+    {t:'Akar Pertama',s:'Di puncak ada satu akar yang sudah ketemu. Cari akar satunya biar jalan menuju menara terbuka.'},
+    {t:'Akar Pasangan',s:'Setiap pasangan akar punya dua ciri: jumlahnya dan hasil kalinya selalu nyambung sama koefisien persamaan.'},
+    {t:'Koefisien Besar',s:'Sekarang ada angka di depan x². Bagi dulu sesuai koefisiennya biar hitungannya lebih rapi.'}]}
+};
+
+/* ---------- Penyimpanan (lokal di perangkat) ---------- */
+const $=id=>document.getElementById(id);
+const app=$('app');
+const fresh=()=>({seen:{},name:'',xp:0,streak:0,lastDay:'',stats:{answered:0,correct:0},missions:0,badges:[],diff:{lin:1,pct:1,kuad:1}});
+let S;
+try{S=Object.assign(fresh(),JSON.parse(localStorage.getItem(KEY))||{})}catch(e){S=fresh()}
+S.seen=S.seen||{};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const money=n=>Number(n).toLocaleString('id-ID');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dayStr=off=>new Date(Date.now()-off*864e5).toLocaleDateString('en-CA',{timeZone:'Asia/Jakarta'});
+const lvl=()=>{let l=1;LEVELS.forEach((th,i)=>{if(S.xp>=th)l=i+1});return l};
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ---------- Suara (disintesis di perangkat, tanpa file audio) ---------- */
+let SOUND=true;
+try{SOUND=localStorage.getItem('misi-mat-sound')!=='off'}catch(e){}
+let AC=null;
+function tone(freqs,type,step,vol){
+  if(!SOUND) return;
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    if(AC.state==='suspended') AC.resume();
+    const t0=AC.currentTime;
+    freqs.forEach((f,i)=>{
+      const start=t0+i*step, dur=step*1.6;
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type=type; o.frequency.setValueAtTime(f,start);
+      g.gain.setValueAtTime(0.0001,start);
+      g.gain.exponentialRampToValueAtTime(vol,start+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,start+dur);
+      o.connect(g).connect(AC.destination);
+      o.start(start); o.stop(start+dur+0.02);
+    });
+  }catch(e){}
+}
+const sfxOk =()=>tone([523,659,784,1047],'triangle',0.09,0.22);   // nada naik: ceria
+const sfxBad=()=>tone([220,165],'sawtooth',0.16,0.10);            // nada turun: pelan, tidak menghakimi
+const sfxWin=()=>tone([523,659,784,1047,1319],'triangle',0.08,0.22);
+function toggleSound(){
+  SOUND=!SOUND;
+  try{localStorage.setItem('misi-mat-sound',SOUND?'on':'off')}catch(e){}
+  if(M) renderMission(); else showData();
+}
+
+/* ---------- Maskot original (bukan logo sekolah; bisa diganti) ---------- */
+function mascot(mood='happy'){
+  const mouth=mood==='sad'
+    ?'<path d="M52 92 Q60 85 68 92" stroke="#1B2340" stroke-width="3" fill="none" stroke-linecap="round"/>'
+    :mood==='wow'
+    ?'<ellipse cx="60" cy="90" rx="5" ry="6" fill="#1B2340"/>'
+    :'<path d="M50 86 Q60 97 70 86" stroke="#1B2340" stroke-width="3" fill="none" stroke-linecap="round"/>';
+  return `<svg viewBox="0 0 120 120" width="100%" height="100%" aria-label="Maskot">
+    <rect width="120" height="120" fill="#E8F0FF"/>
+    <path d="M30 118 Q32 92 60 90 Q88 92 90 118Z" fill="#2F6BFF"/>
+    <path d="M52 92 L68 92 L60 104Z" fill="#FFC83D"/>
+    <rect x="52" y="78" width="16" height="14" rx="4" fill="#FFD7B5"/>
+    <circle cx="60" cy="60" r="34" fill="#FFE0C2"/>
+    <path d="M24 56 Q22 18 60 18 Q98 18 96 56 Q88 36 60 36 Q40 36 24 56Z" fill="#3B2F8F"/>
+    <path d="M24 56 Q18 84 30 92 Q26 72 30 60Z" fill="#3B2F8F"/>
+    <path d="M96 56 Q102 84 90 92 Q94 72 90 60Z" fill="#3B2F8F"/>
+    <path d="M60 36 Q52 46 46 40" stroke="#3B2F8F" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="46" cy="60" rx="6.5" ry="8.5" fill="#1B2340"/>
+    <ellipse cx="74" cy="60" rx="6.5" ry="8.5" fill="#1B2340"/>
+    <circle cx="48" cy="57" r="2.6" fill="#fff"/><circle cx="76" cy="57" r="2.6" fill="#fff"/>
+    <ellipse cx="38" cy="72" rx="5" ry="3" fill="#FF8FA3" opacity=".7"/>
+    <ellipse cx="82" cy="72" rx="5" ry="3" fill="#FF8FA3" opacity=".7"/>
+    ${mouth}
+  </svg>`;
+}
+
+/* ---------- Utilitas matematika & soal ---------- */
+const R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[R(0,a.length-1)];
+const sg=n=>n<0?`- ${-n}`:`+ ${n}`;
+const sgx=n=>n<0?`- ${-n}x`:`+ ${n}x`;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=R(0,i);[a[i],a[j]]=[a[j],a[i]]}return a};
+function distract(ans,extra=[],step=1,spread=5){
+  const s=new Set();
+  for(const e of extra) if(e!==ans) s.add(e);
+  let g=0;
+  while(s.size<3&&g++<200){const v=ans+step*R(-spread,spread); if(v!==ans) s.add(v);}
+  return [...s].slice(0,3);
+}
+
+function genLin(d){
+  const x=R(-10,10);
+  if(d<3){
+    const a=d===1?R(2,5):R(2,9), b=R(-15,15)||3, c=a*x+b;
+    return {text:`Tentukan nilai x dari persamaan:\n\n${a}x ${sg(b)} = ${c}`,
+      ans:x, wrong:distract(x,[-x,a*x,c],1,4),
+      exp:`Pindahkan konstanta: ${a}x = ${c} − (${b}) = ${a*x}.<br>Bagi kedua ruas dengan ${a}: x = <b>${x}</b>.`};
+  }
+  let a,c;
+  do{a=R(3,9);c=R(-3,8);}while(c===a||c===0);
+  const b=R(-12,12), e=(a-c)*x+b, k=a-c;
+  return {text:`Tentukan nilai x dari persamaan:\n\n${a}x ${sg(b)} = ${c}x ${sg(e)}`,
+    ans:x, wrong:distract(x,[-x],1,4),
+    exp:`Kumpulkan suku x di kiri: ${k}x = ${e} − (${b}) = ${k*x}.<br>Bagi dengan ${k}: x = <b>${x}</b>.`};
+}
+
+function genPct(d){
+  if(d<3){
+    const base=R(1,40)*100, p=d===1?pick([10,20,25,50]):pick([5,15,30,40,75]);
+    const up=d===1?true:Math.random()<.5;
+    const delta=base*p/100, ans=up?base+delta:base-delta;
+    return {rp:true,
+      text:`Harga sebuah barang Rp ${money(base)} ${up?`dinaikkan ${p}%`:`didiskon ${p}%`}.\n\nBerapa harga akhirnya?`,
+      ans, wrong:distract(ans,[up?base-delta:base+delta],100,6),
+      exp:`${up?'Kenaikan':'Diskon'} ${p}% dari Rp ${money(base)} = Rp ${money(delta)}.<br>Harga akhir = Rp ${money(ans)}.`};
+  }
+  let base,p,q,ans;
+  for(;;){
+    p=pick([10,20,25,50]); q=pick([10,20,25,50]); base=R(1,40)*100;
+    const v=base*(100+p)*(100-q);
+    if(v%10000===0){ans=v/10000;break;}
+  }
+  const mid=base*(100+p)/100, mis=base*(100+p-q)/100;
+  return {rp:true,
+    text:`Harga sebuah barang Rp ${money(base)} dinaikkan ${p}%, lalu diturunkan ${q}%.\n\nBerapa harga akhirnya?`,
+    ans, wrong:distract(ans,[mis,mid],100,6),
+    exp:`Naik ${p}%: Rp ${money(base)} → Rp ${money(mid)}.<br>Turun ${q}%: Rp ${money(mid)} → Rp ${money(ans)}.<br><span class="small">Perubahan kedua dihitung dari harga yang sudah berubah, jadi persentasenya tidak dijumlahkan begitu saja.</span>`};
+}
+
+function genKuad(d){
+  const rng=d===1?5:d===2?8:6;
+  const a=d===3?pick([2,3]):1;
+  let r1,r2;
+  do{r1=R(-rng,rng);r2=R(-rng,rng);}while(r1===0||r2===0||r1===r2||r1+r2===0);
+  const b=-a*(r1+r2), c=a*r1*r2;
+  const eq=`${a===1?'':a}x² ${sgx(b)} ${sg(c)} = 0`;
+  return {text:`Salah satu akar dari persamaan\n\n${eq}\n\nadalah x = ${r1}.\nBerapa akar yang lainnya?`,
+    ans:r2, wrong:distract(r2,[-r2,r1,-r1],1,3),
+    exp:`Jumlah akar = −b/a = ${-b}/${a} = ${(-b)/a}.<br>Akar lainnya = ${(-b)/a} − (${r1}) = <b>${r2}</b>.<br><span class="small">Cek: ${r1} × ${r2} = ${r1*r2} = c/a.</span>`};
+}
+const GEN={lin:genLin,pct:genPct,kuad:genKuad};
+
+/* ---------- Pop-up & stiker: selamat (benar) dan menghibur (salah) ---------- */
+const STK_OK=[
+  {e:'🎉',h:'Keren banget!',s:'Jawaban kamu tepat!'},
+  {e:'🌟',h:'Mantap!',s:'Kamu makin jago nih.'},
+  {e:'🚀',h:'Gokil!',s:'Otak kamu lagi on fire!'},
+  {e:'👑',h:'Juara!',s:'Lanjut terus ya!'}];
+const STK_BAD=[
+  {e:'🥺',h:'Yah, belum tepat',s:'Gapapa, cek penjelasannya dulu ya.'},
+  {e:'💧',h:'Sedikit lagi!',s:'Soal ini bakal balik lagi kok.'},
+  {e:'🫂',h:'Tenang aja',s:'Salah itu bagian dari belajar.'}];
+const PHOTO_STK=null; // isi dengan data URI foto stiker jika diperlukan
+function stickerSVG(ok){
+  if(ok && PHOTO_STK) return `<img src="${PHOTO_STK}" alt="Stiker foto" style="width:100%;height:100%;display:block">`;
+  return ok
+    ? `<svg viewBox="0 0 120 120" width="100%" height="100%"><polygon points="60,6 73,40 110,42 80,64 90,100 60,80 30,100 40,64 10,42 47,40" fill="#FFC83D" stroke="#1B2340" stroke-width="3" stroke-linejoin="round"/><circle cx="48" cy="60" r="4" fill="#1B2340"/><circle cx="72" cy="60" r="4" fill="#1B2340"/><path d="M48 68 Q60 80 72 68" stroke="#1B2340" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="40" cy="72" rx="4" ry="2.5" fill="#FF8FA3" opacity=".7"/><ellipse cx="80" cy="72" rx="4" ry="2.5" fill="#FF8FA3" opacity=".7"/></svg>`
+    : `<svg viewBox="0 0 120 120" width="100%" height="100%"><path d="M60 10 C60 10 22 62 22 80 A38 38 0 0 0 98 80 C98 62 60 10 60 10Z" fill="#7FB2FF" stroke="#1B2340" stroke-width="3"/><circle cx="48" cy="76" r="4" fill="#1B2340"/><circle cx="72" cy="76" r="4" fill="#1B2340"/><path d="M50 98 Q60 90 70 98" stroke="#1B2340" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M36 70 q-4 8 0 10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`;
+}
+function showSticker(ok){
+  document.querySelectorAll('.pop-ov,.cf').forEach(n=>n.remove());
+  const it=rnd(ok?STK_OK:STK_BAD);
+  const ov=document.createElement('div');
+  ov.className='pop-ov'+(ok?'':' sad');
+  ov.innerHTML=`<div class="pop-box"><div class="stk">${stickerSVG(ok)}</div><h2>${it.e} ${it.h}</h2><p>${it.s}</p><div class="small" style="margin-top:10px">Ketuk untuk lanjut</div></div>`;
+  ov.onclick=()=>ov.remove();
+  document.body.appendChild(ov);
+  if(ok){
+    const cols=['#2F6BFF','#FF8A3D','#FFC83D','#FF6B9A','#22C55E'];
+    for(let i=0;i<24;i++){
+      const c=document.createElement('span');
+      c.className='cf';
+      c.style.left=(Math.random()*100)+'vw';
+      c.style.background=cols[i%cols.length];
+      c.style.animationDelay=(Math.random()*.3)+'s';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),1900);
+    }
+  }
+  setTimeout(()=>ov.remove(), ok?1800:2600);
+}
+
+/* ---------- Misi ---------- */
+let M=null;
+
+function startMission(t){
+  const ch=S.diff[t]-1;
+  if((S.seen[t]??-1)!==ch) return showStory(t,ch);   // bab baru: tampilkan cerita dulu
+  beginMission(t);
+}
+
+function beginMission(t){
+  S.seen[t]=S.diff[t]-1; save();
+  M={topic:t,queue:Array.from({length:5},()=>({t,retry:false})),i:0,answered:false,picked:-1,fb:'',
+     combo:0,bestCombo:0,cc:0,cw:0,mistakes:0,correct:0,xpGain:0,levelBefore:lvl(),mood:'happy'};
+  setNav(null);
+  nextQ();
+}
+
+function showStory(t,ch){
+  const w=STORY[t], c=w.ch[ch];
+  setNav(null);
+  app.innerHTML=`
+  <div class="card pop" style="margin-top:20px;text-align:center">
+    <div class="mascot big" style="margin:0 auto">${mascot('happy')}</div>
+    <span class="label">📖 ${w.world} · Bab ${ch+1} dari ${w.ch.length}</span>
+    <h1>${c.t}</h1>
+    <div class="bubble" style="text-align:left;margin-top:8px">${c.s}</div>
+    <button class="btn" style="margin-top:16px" onclick="beginMission('${t}')">Gas misi ▶</button>
+    <button class="iconbtn" style="margin-top:12px;width:auto;padding:10px 16px;font-weight:800" onclick="home()">Nanti aja</button>
+  </div>`;
+}
+
+function nextQ(){
+  const it=M.queue[M.i];
+  const c=GEN[it.t](S.diff[it.t]);
+  c.opts=shuffle([c.ans,...c.wrong]);
+  M.cur=c; M.answered=false; M.picked=-1; M.fb=''; M.mood='happy';
+  renderMission();
+}
+
+const fmtVal=(cur,n)=>cur.rp?'Rp '+money(n):String(n);
+const LET=['A','B','C','D'];
+
+function renderMission(){
+  const total=M.queue.length, retry=M.queue[M.i].retry;
+  const opts=M.cur.opts.map((v,i)=>{
+    let cls='';
+    if(M.answered){
+      if(v===M.cur.ans) cls='ok';
+      else if(M.picked===i) cls='bad';
+    }
+    return `<button class="opt ${cls}" ${M.answered?'disabled':''} onclick="choose(${i})"><span class="L">${LET[i]}</span>${fmtVal(M.cur,v)}</button>`;
+  }).join('');
+  const speech=M.answered
+    ? (M.lastOk?rnd(PRAISE):rnd(OOPS))
+    : 'Siap? Baca pelan-pelan, lalu pilih jawabannya 👇';
+  app.innerHTML=`
+  <div class="between">
+    <button class="iconbtn" onclick="home()" aria-label="Keluar">✕</button>
+    <span class="chip blue">${TOPIC[M.topic].ico} ${TOPIC[M.topic].name} · Lv ${S.diff[M.topic]}</span>
+    <span class="row" style="gap:6px"><button class="iconbtn" onclick="toggleSound()" aria-label="Suara">${SOUND?'🔊':'🔇'}</button><span class="chip">⚡ ${M.xpGain} XP</span></span>
+  </div>
+  <div style="margin:12px 0 4px" class="bar"><div style="width:${M.i/total*100}%"></div></div>
+  <div class="small">Soal ${M.i+1} dari ${total}${retry?' · <b>soal ulang</b>':''} · 🔥 combo ${M.combo}</div>
+
+  <div class="row pop" style="margin-top:12px;align-items:flex-end">
+    <div class="mascot"> ${mascot(M.mood)} </div>
+    <div class="bubble" style="flex:1">${speech}</div>
+  </div>
+
+  <div class="card pop">
+    <span class="label">Matematika · ${M.cur.rp?'Uang':'Hitung'}</span>
+    <div class="q" style="margin-top:10px">${M.cur.text}</div>
+    <div style="margin-top:10px">${opts}</div>
+    ${M.fb}
+    ${M.answered?`<button class="btn" style="margin-top:14px" onclick="next()">Lanjut ▶</button>`:''}
+  </div>`;
+}
+
+function choose(i){
+  if(M.answered) return;
+  M.answered=true; M.picked=i;
+  const ok=M.cur.opts[i]===M.cur.ans;
+  M.lastOk=ok;
+  const it=M.queue[M.i];
+  S.stats.answered++;
+  if(ok){
+    M.combo++; M.bestCombo=Math.max(M.bestCombo,M.combo); M.cc++; M.cw=0; M.correct++;
+    const gain=10+Math.min(M.combo,5)*2;
+    S.xp+=gain; M.xpGain+=gain; S.stats.correct++;
+    M.mood='happy';
+    if(M.cc>=3){
+      M.cc=0;
+      if(S.diff[it.t]<3){S.diff[it.t]++;}
+    }
+    M.fb=`<div class="feedback ok pop"><b>+${gain} XP</b>${M.combo>=3?` · 🔥 combo ${M.combo}`:''}<br>${M.cur.exp}</div>`;
+  }else{
+    M.combo=0; M.cc=0; M.cw++; M.mistakes++; M.mood='sad';
+    if(M.cw>=2){M.cw=0; if(S.diff[it.t]>1) S.diff[it.t]--;}
+    M.queue.splice(Math.min(M.i+3,M.queue.length),0,{t:it.t,retry:true});
+    M.fb=`<div class="feedback bad pop">Jawaban yang benar: <b>${fmtVal(M.cur,M.cur.ans)}</b><br>${M.cur.exp}</div>`;
+  }
+  if(navigator.vibrate) navigator.vibrate(ok?30:[80,60,80]);
+  ok?sfxOk():sfxBad();
+  showSticker(ok);
+  save();
+  renderMission();
+}
+
+function next(){
+  M.i++;
+  if(M.i>=M.queue.length) return endMission();
+  nextQ();
+}
+
+function todayStreak(){
+  const today=dayStr(0), yest=dayStr(1);
+  if(S.lastDay===today) return;
+  S.streak=(S.lastDay===yest)?S.streak+1:1; // tanpa hukuman: cukup mulai lagi
+  S.lastDay=today;
+}
+
+function badgeHTML(k,got=true){
+  return `<div class="bdg ${got?'':'locked'}"><span class="e">${BADGES[k][0]}</span>${BADGES[k][1]}</div>`;
+}
+
+function endMission(){
+  const perfect=M.mistakes===0&&M.queue.length===5;
+  S.missions++;
+  todayStreak();
+  const earned=[];
+  const award=(k,cond)=>{if(cond&&!S.badges.includes(k)){S.badges.push(k);earned.push(k);}};
+  award('first',true);
+  award('perfect',perfect);
+  award('combo5',M.bestCombo>=5);
+  award('pro50',S.stats.correct>=50);
+  award('lvl3',Object.values(S.diff).some(v=>v>=3));
+  award('day3',S.streak>=3);
+  save();
+  const after=lvl();
+  const newCh=S.diff[M.topic]-1;
+  const unlock=newCh>(S.seen[M.topic]??-1);
+  if(unlock){S.seen[M.topic]=newCh; save();}
+  const up=after>M.levelBefore;
+  app.innerHTML=`
+  <div class="card pop" style="text-align:center;margin-top:30px">
+    <div class="mascot big" style="margin:0 auto">${mascot(M.correct>=3?'happy':'wow')}</div>
+    <h1>${M.mistakes===0?'Misi sempurna! 🎉':'Misi kelar! 🎉'}</h1>
+    <p class="small">${M.correct} dari ${M.queue.length} benar</p>
+    <div class="chip" style="display:inline-block;margin:6px 0">+${M.xpGain} XP</div>
+    ${up?`<p><span class="chip pink">⬆️ LEVEL UP! Level ${after}</span></p>`:''}
+    ${earned.length?`<p class="small" style="margin-top:12px">Lencana baru 🎁</p><div class="badges">${earned.map(k=>badgeHTML(k)).join('')}</div>`:''}
+    ${unlock?`<div class="bubble" style="text-align:left;margin:12px 0"><span class="label">🔓 Bab baru terbuka · ${STORY[M.topic].world}</span><br><b>${STORY[M.topic].ch[newCh].t}</b><br>${STORY[M.topic].ch[newCh].s}</div>`:''}
+    <p class="small" style="margin:12px 0">Salah itu bagian dari proses. Soal yang salah tadi udah dijadwalin buat balik lagi.</p>
+    <button class="btn" onclick="startMission('${M.topic}')">Gas misi lagi ▶</button>
+    <button class="iconbtn" style="margin-top:12px;width:auto;padding:10px 16px;font-weight:800" onclick="home()">Ke beranda</button>
+  </div>`;
+  setNav(null);
+  sfxWin();
+}
+
+/* ---------- Navigasi bawah ---------- */
+function setNav(active){
+  const nav=$('nav');
+  if(!S.name||active===null){nav.style.display='none';return;}
+  nav.style.display='flex';
+  ['home','badge','data'].forEach(k=>$('n-'+k).classList.toggle('on',k===active));
+}
+
+/* ---------- Beranda: peta dunia ---------- */
+function home(){
+  M=null;
+  if(!S.name){
+    setNav(null);
+    app.innerHTML=`
+    <div class="card pop" style="margin-top:30px;text-align:center">
+      <div class="mascot big" style="margin:0 auto">${mascot('happy')}</div>
+      <h1>Hai, selamat datang! 👋</h1>
+      <p class="small">Misi Matematika · SMA Alfa Centauri</p>
+      <div style="text-align:left;margin-top:12px"><span class="label">Nama panggilan kamu</span></div>
+      <input id="nm" placeholder="contoh: Rani" maxlength="30" style="margin-top:6px">
+      <div style="margin-top:14px"><button class="btn" onclick="setName()">Gas, mulai! 🚀</button></div>
+    </div>`;
+    return;
+  }
+  const l=lvl(), nxt=LEVELS[l], base=LEVELS[l-1];
+  const prog=nxt?(S.xp-base)/(nxt-base)*100:100;
+  setNav('home');
+  app.innerHTML=`
+  <div class="card" style="margin-top:6px">
+    <div class="row">
+      <div class="mascot">${mascot('happy')}</div>
+      <div style="flex:1">
+        <div class="between"><b style="font-size:1.05rem">Hai, ${esc(S.name)}!</b><span class="chip pink">🔥 ${S.streak} hari</span></div>
+        <div class="small" style="margin:2px 0 6px">Level ${l} · ${S.xp} XP</div>
+        <div class="bar"><div style="width:${prog}%"></div></div>
+        <div class="small" style="margin-top:4px">${nxt?`${nxt-S.xp} XP lagi ke Level ${l+1}`:'Level maksimum 😎'}</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>🗺️ Dunia Matematika</h2>
+  <div class="tiles">
+    ${Object.keys(TOPIC).map(t=>`
+      <button class="tile ${TOPIC[t].cls}" onclick="startMission('${t}')">
+        <span class="ico">${TOPIC[t].ico}</span>
+        <div><div class="name">${TOPIC[t].name}</div><div class="sub">${STORY[t].world}<br>Bab ${S.diff[t]} dari 3 ${'★'.repeat(S.diff[t])}${'☆'.repeat(3-S.diff[t])}</div></div>
+        <span class="play">MAIN ▶</span>
+      </button>`).join('')}
+    ${SOON.map(s=>`
+      <div class="tile locked">
+        <span class="ico">${s.ico}</span>
+        <div><div class="name">${s.name}</div><div class="sub">Segera hadir</div></div>
+        <span class="play">🔒</span>
+      </div>`).join('')}
+  </div>
+
+  <h2>🎁 Lencana terbaru</h2>
+  <div class="card" style="margin-top:4px">
+    <div class="badges">${Object.keys(BADGES).slice(0,3).map(k=>badgeHTML(k,S.badges.includes(k))).join('')}</div>
+    <div class="small" style="text-align:center;margin-top:10px"><a href="#" onclick="showBadges();return false" style="color:var(--blue);font-weight:800">Lihat semua lencana →</a></div>
+  </div>`;
+}
+
+function showBadges(){
+  setNav('badge');
+  const got=S.badges.length;
+  app.innerHTML=`
+  <h1 style="margin-top:14px">🏆 Lencana</h1>
+  <p class="small">${got} dari ${Object.keys(BADGES).length} terbuka</p>
+  <div class="card"><div class="badges">${Object.keys(BADGES).map(k=>badgeHTML(k,S.badges.includes(k))).join('')}</div></div>
+  <div class="card small">
+    ${Object.keys(BADGES).map(k=>`<div style="margin:6px 0"><b>${BADGES[k][1]}</b>: ${BADGES[k][2]}</div>`).join('')}
+  </div>`;
+}
+
+function showData(){
+  setNav('data');
+  app.innerHTML=`
+  <h1 style="margin-top:14px">📊 Progres</h1>
+  <div class="card">
+    <div class="between"><span>Misi selesai</span><b>${S.missions}</b></div>
+    <div class="between" style="margin-top:8px"><span>Jawaban benar</span><b>${S.stats.correct} / ${S.stats.answered}</b></div>
+    <div class="between" style="margin-top:8px"><span>Total XP</span><b>${S.xp}</b></div>
+    <div class="between" style="margin-top:8px"><span>Streak terbaik saat ini</span><b>${S.streak} hari</b></div>
+  </div>
+  <div class="card">
+    <p class="small" style="margin-top:0">Data tersimpan di perangkat ini. Guru bisa menyalin data progres untuk dilihat.</p>
+    <button class="iconbtn" style="width:100%;margin-bottom:12px;font-weight:800" onclick="toggleSound()">${SOUND?'🔊 Suara: nyala':'🔇 Suara: mati'}</button>
+    <button class="btn" onclick="exportData()">Salin data progres (guru)</button>
+    <button class="iconbtn" style="width:100%;margin-top:12px;font-weight:800" onclick="resetAll()">Reset progres</button>
+  </div>`;
+}
+
+function setName(){
+  const v=$('nm').value.trim();
+  S.name=v||'Siswa';
+  save(); home();
+}
+
+function exportData(){
+  const txt=JSON.stringify(S,null,2);
+  const done=()=>{const b=document.querySelector('.btn[onclick="exportData()"]'); if(b){b.textContent='Tersalin ✅'; setTimeout(()=>{b.textContent='Salin data progres (guru)'},1600);}};
+  const fallback=()=>{const t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');done();}catch(e){}t.remove();};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,fallback);}else{fallback();}
+}
+
+let resetArmed=false;
+function resetAll(){
+  const b=document.querySelector('.iconbtn[onclick="resetAll()"]');
+  if(!resetArmed){
+    resetArmed=true;
+    if(b) b.textContent='Ketuk lagi untuk hapus semua progres';
+    setTimeout(()=>{resetArmed=false; if(b) b.textContent='Reset progres';},3000);
+    return;
+  }
+  resetArmed=false;
+  try{localStorage.removeItem(KEY);}catch(e){}
+  S=fresh(); home();
+}
+
+home();
+</script>
+</body>
+</html>
