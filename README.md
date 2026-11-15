@@ -9,3 +9,9 @@ Buka `index.html` di browser, atau aktifkan GitHub Pages (Settings, Pages, Deplo
 ## Catatan
 - Soal dibuat otomatis oleh kode. Kunci jawaban dihitung dari soal, tetapi belum ditinjau guru Matematika.
 - Foto stiker tidak disertakan. Isi `PHOTO_STK` di `index.html` jika diperlukan dan sudah disetujui.
+
+## Kirim progres ke guru (Microsoft Forms)
+Setelah misi, siswa bisa menyalin ringkasan satu baris dan menempelkannya ke formulir (sukarela).
+Formulir hanya perlu satu pertanyaan teks panjang bernama "Ringkasan progres".
+Alamat formulir ada di konstanta `FORM_URL` di `index.html`.
+Format ringkasan: `kode | kelas | topik | tingkat | benar | salah | XP`.

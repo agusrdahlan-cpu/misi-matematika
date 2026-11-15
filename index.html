@@ -132,10 +132,28 @@ const STORY={
 /* ---------- Penyimpanan (lokal di perangkat) ---------- */
 const $=id=>document.getElementById(id);
 const app=$('app');
-const fresh=()=>({seen:{},name:'',xp:0,streak:0,lastDay:'',stats:{answered:0,correct:0},missions:0,badges:[],diff:{lin:1,pct:1,kuad:1}});
+const fresh=()=>({seen:{},kode:'',kelas:'',name:'',xp:0,streak:0,lastDay:'',stats:{answered:0,correct:0},missions:0,badges:[],diff:{lin:1,pct:1,kuad:1}});
 let S;
 try{S=Object.assign(fresh(),JSON.parse(localStorage.getItem(KEY))||{})}catch(e){S=fresh()}
 S.seen=S.seen||{};
+
+/* ---------- Kirim progres ke guru lewat Microsoft Forms (sukarela, disalin-tempel siswa) ---------- */
+const FORM_URL='https://forms.cloud.microsoft/Pages/ResponsePage.aspx?id=A9Ld9zIc1EOZOykx16CQgL63BgNld5BGkVOJn7NJSH1URVg2TU1CRExOTTFSTDRZM1NUUFg4TlZPTy4u';
+let LAST_SUM='';
+// bersihkan kode/kelas: tanpa pemisah "|" dan tanpa awalan =,+,-,@ (mencegah rumus di Excel)
+function cleanCode(v){return String(v||'').replace(/[|\n\r]/g,' ').replace(/^[=+\-@\s]+/,'').trim().slice(0,20);}
+function copyText(txt,btn,label){
+  const done=()=>{if(btn){btn.textContent='Tersalin ✅';setTimeout(()=>{btn.textContent=label},1600);}};
+  const fallback=()=>{const t=document.createElement('textarea');t.value=txt;t.style.position='fixed';t.style.opacity='0';document.body.appendChild(t);t.select();try{document.execCommand('copy');done();}catch(e){}t.remove();};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(done,fallback);}else{fallback();}
+}
+function copySummary(){copyText(LAST_SUM,document.getElementById('copysum'),'📋 Salin ringkasan');}
+function saveKodeKelas(){
+  S.kode=cleanCode(document.getElementById('kd2').value);
+  S.kelas=cleanCode(document.getElementById('kl2').value);
+  save();
+  const b=document.getElementById('savekk'); if(b){b.textContent='Tersimpan ✅'; setTimeout(()=>{b.textContent='Simpan'},1400);}
+}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const money=n=>Number(n).toLocaleString('id-ID');
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -449,6 +467,7 @@ function endMission(){
   const unlock=newCh>(S.seen[M.topic]??-1);
   if(unlock){S.seen[M.topic]=newCh; save();}
   const up=after>M.levelBefore;
+  LAST_SUM=[S.kode||'TANPA-KODE',S.kelas||'-',TOPIC[M.topic].name,'Tingkat '+S.diff[M.topic],'benar '+M.correct,'salah '+M.mistakes,'XP '+M.xpGain].join(' | ');
   app.innerHTML=`
   <div class="card pop" style="text-align:center;margin-top:30px">
     <div class="mascot big" style="margin:0 auto">${mascot(M.correct>=3?'happy':'wow')}</div>
@@ -461,6 +480,14 @@ function endMission(){
     <p class="small" style="margin:12px 0">Salah itu bagian dari proses. Soal yang salah tadi udah dijadwalin buat balik lagi.</p>
     <button class="btn" onclick="startMission('${M.topic}')">Gas misi lagi ▶</button>
     <button class="iconbtn" style="margin-top:12px;width:auto;padding:10px 16px;font-weight:800" onclick="home()">Ke beranda</button>
+  </div>
+  <div class="card" style="margin-top:6px">
+    <b>📨 Kirim ke guru (sukarela)</b>
+    <p class="small" style="margin:4px 0 8px">1) Salin ringkasan. 2) Buka formulir. 3) Tempel di kolom Ringkasan progres, cek isinya, lalu tekan Kirim.</p>
+    <div class="bubble" style="word-break:break-word;font-size:.85rem;margin:8px 0 12px">${esc(LAST_SUM)}</div>
+    <button class="btn" id="copysum" onclick="copySummary()">📋 Salin ringkasan</button>
+    <a class="btn" style="display:block;text-align:center;text-decoration:none;margin-top:12px" href="${FORM_URL}" target="_blank" rel="noopener">Buka formulir ▶</a>
+    ${S.kode?'':'<p class="small" style="margin-bottom:0">Kodemu belum diisi. Isi di menu Progres agar guru tahu ini dari siapa.</p>'}
   </div>`;
   setNav(null);
   sfxWin();
@@ -486,6 +513,11 @@ function home(){
       <p class="small">Misi Matematika · SMA Alfa Centauri</p>
       <div style="text-align:left;margin-top:12px"><span class="label">Nama panggilan kamu</span></div>
       <input id="nm" placeholder="contoh: Rani" maxlength="30" style="margin-top:6px">
+      <div style="text-align:left;margin-top:12px"><span class="label">Kode siswa (dari guru, boleh dikosongkan)</span></div>
+      <input id="kd" placeholder="contoh: A12" maxlength="20" style="margin-top:6px">
+      <div style="text-align:left;margin-top:12px"><span class="label">Kelas (boleh dikosongkan)</span></div>
+      <input id="kl" placeholder="contoh: X-1" maxlength="20" style="margin-top:6px">
+      <p class="small" style="text-align:left;margin-top:12px">Jangan tulis nama lengkap. Progresmu tersimpan di HP ini. Data baru sampai ke guru kalau kamu sendiri menyalin ringkasan dan mengirimnya lewat formulir. Mengirim itu sukarela.</p>
       <div style="margin-top:14px"><button class="btn" onclick="setName()">Gas, mulai! 🚀</button></div>
     </div>`;
     return;
@@ -552,6 +584,13 @@ function showData(){
     <div class="between" style="margin-top:8px"><span>Streak terbaik saat ini</span><b>${S.streak} hari</b></div>
   </div>
   <div class="card">
+    <b>Kode siswa &amp; kelas</b>
+    <p class="small" style="margin:4px 0 8px">Dipakai di ringkasan yang kamu kirim ke guru. Jangan tulis nama lengkap.</p>
+    <input id="kd2" placeholder="Kode siswa (dari guru)" maxlength="20" value="${esc(S.kode)}">
+    <input id="kl2" placeholder="Kelas, contoh: X-1" maxlength="20" value="${esc(S.kelas)}" style="margin-top:8px">
+    <button class="btn" style="margin-top:10px" id="savekk" onclick="saveKodeKelas()">Simpan</button>
+  </div>
+  <div class="card">
     <p class="small" style="margin-top:0">Data tersimpan di perangkat ini. Guru bisa menyalin data progres untuk dilihat.</p>
     <button class="iconbtn" style="width:100%;margin-bottom:12px;font-weight:800" onclick="toggleSound()">${SOUND?'🔊 Suara: nyala':'🔇 Suara: mati'}</button>
     <button class="btn" onclick="exportData()">Salin data progres (guru)</button>
@@ -562,6 +601,8 @@ function showData(){
 function setName(){
   const v=$('nm').value.trim();
   S.name=v||'Siswa';
+  S.kode=cleanCode($('kd').value);
+  S.kelas=cleanCode($('kl').value);
   save(); home();
 }
 
