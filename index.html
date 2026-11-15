@@ -82,6 +82,14 @@ input{width:100%;padding:14px;border-radius:16px;border:2px solid #DDE2F2;backgr
 .pop-box .stk{width:120px;height:120px;margin:0 auto}
 .pop-box h2{margin:8px 0 4px;font-size:1.3rem;font-weight:900}
 .pop-box p{margin:0;font-size:.95rem;color:var(--muted);font-weight:700}
+.theory ul{margin:8px 0 0;padding-left:20px;text-align:left}
+.theory li{margin:4px 0}
+.formula{background:#DDE7FF;color:var(--blue-d);border-radius:14px;padding:10px 12px;margin:10px 0;font-weight:900;text-align:center;line-height:1.6}
+.exm{background:#FFF7DB;border-radius:14px;padding:10px 12px;margin:10px 0;text-align:left}
+.exm b.exq{display:block;margin-bottom:4px}
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(27,35,64,.55);overflow-y:auto;padding:16px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.sheetin{max-width:480px;margin:0 auto;background:#fff;border-radius:22px;padding:16px;box-shadow:var(--shadow)}
+.warnbox{background:#FFE0EA;color:#8E1244;border-radius:14px;padding:10px 12px;margin:10px 0;text-align:left;font-weight:700;font-size:.92rem}
 .pop-ov.sad .pop-box{box-shadow:0 10px 0 rgba(127,178,255,.35)}
 .cf{position:fixed;top:-20px;width:10px;height:14px;border-radius:3px;animation:fall 1.5s linear forwards;z-index:51;pointer-events:none}
 @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -350,10 +358,88 @@ function showStory(t,ch){
     <span class="label">📖 ${w.world} · Bab ${ch+1} dari ${w.ch.length}</span>
     <h1>${c.t}</h1>
     <div class="bubble" style="text-align:left;margin-top:8px">${c.s}</div>
-    <button class="btn" style="margin-top:16px" onclick="beginMission('${t}')">Gas misi ▶</button>
+    <button class="btn" style="margin-top:16px" onclick="showTheory('${t}',${ch})">Lihat materi ▶</button>
     <button class="iconbtn" style="margin-top:12px;width:auto;padding:10px 16px;font-weight:800" onclick="home()">Nanti aja</button>
   </div>`;
 }
+
+/* ---------- Materi singkat per bab (tampil sekali di awal bab, sebelum misi) ---------- */
+const THEORY={
+  lin:[
+    {t:'Persamaan seperti timbangan',pts:['Kedua ruas persamaan itu seperti dua sisi timbangan: apa pun yang kamu lakukan di satu sisi, lakukan juga di sisi lain.','Langkah: (1) pindahkan angka tambahan/kurangan ke ruas lain, tandanya berbalik; (2) bagi kedua ruas dengan angka di depan x.'],
+     f:'ax + b = c  →  x = (c − b) ÷ a',
+     ex:[{q:'3x + 5 = 20',s:'3x = 20 − 5 = 15<br>x = 15 ÷ 3 = <b>5</b>'},{q:'2x − 6 = 10',s:'2x = 10 + 6 = 16<br>x = 16 ÷ 2 = <b>8</b>'}],
+     w:'Cek jawabanmu: masukkan x ke persamaan awal, kedua sisi harus sama.'},
+    {t:'Hati-hati tanda negatif',pts:['Saat memindahkan suku, tambah jadi kurang dan kurang jadi tambah.','Hasil x boleh negatif. Itu normal, jangan panik.'],
+     f:'ax + b = c  →  ax = c − b',
+     ex:[{q:'4x − 7 = 13',s:'4x = 13 + 7 = 20<br>x = 20 ÷ 4 = <b>5</b>'},{q:'5x + 12 = −3',s:'5x = −3 − 12 = −15<br>x = −15 ÷ 5 = <b>−3</b>'}],
+     w:'Kesalahan umum: lupa membalik tanda saat pindah ruas.'},
+    {t:'x di dua sisi',pts:['Kumpulkan semua suku x di satu ruas dan semua angka di ruas lainnya.','Lalu bagi dengan koefisien x yang tersisa.'],
+     f:'ax + b = cx + e  →  (a − c)x = e − b',
+     ex:[{q:'5x + 3 = 2x + 15',s:'5x − 2x = 15 − 3<br>3x = 12, jadi x = <b>4</b><br>Cek: 5·4+3 = 23 dan 2·4+15 = 23 ✓'},{q:'7x − 4 = 3x + 8',s:'7x − 3x = 8 + 4<br>4x = 12, jadi x = <b>3</b>'}],
+     w:''}],
+  pct:[
+    {t:'Persen itu "per seratus"',pts:['p% artinya p per 100. Jadi p% dari sebuah angka = p/100 × angka itu.','Harga naik: harga lama ditambah kenaikannya. Harga diskon: harga lama dikurangi potongannya.'],
+     f:'Naik p%: harga akhir = harga + (p/100 × harga)<br>Diskon p%: harga akhir = harga − (p/100 × harga)',
+     ex:[{q:'Rp 40.000 naik 25%',s:'25/100 × 40.000 = 10.000<br>Harga akhir = 40.000 + 10.000 = <b>Rp 50.000</b>'},{q:'Rp 50.000 diskon 20%',s:'20/100 × 50.000 = 10.000<br>Harga akhir = 50.000 − 10.000 = <b>Rp 40.000</b>'}],
+     w:''},
+    {t:'Trik hitung cepat persen',pts:['10% = bagi 10. 5% = setengah dari 10%. 15% = 10% + 5%.','Boleh juga ubah ke desimal: 30% = 0,30 dan 75% = 0,75.'],
+     f:'p% dari B = p/100 × B',
+     ex:[{q:'Diskon 15% dari Rp 60.000',s:'10% = 6.000, 5% = 3.000, jadi 15% = 9.000<br>Harga akhir = 60.000 − 9.000 = <b>Rp 51.000</b>'},{q:'Rp 20.000 naik 30%',s:'0,30 × 20.000 = 6.000<br>Harga akhir = 20.000 + 6.000 = <b>Rp 26.000</b>'}],
+     w:'Baca soalnya: naik atau diskon? Kalau salah arah, jawabanmu pasti meleset.'},
+    {t:'Naik lalu turun',pts:['Kalau harga berubah dua kali, hitung satu per satu. Persen kedua dihitung dari harga yang SUDAH berubah.','Jadi persennya tidak boleh langsung dijumlah atau dikurangi.'],
+     f:'Harga akhir = harga × (100+p)/100 × (100−q)/100',
+     ex:[{q:'Rp 20.000 naik 10%, lalu turun 20%',s:'Naik 10%: 20.000 × 1,1 = 22.000<br>Turun 20%: 22.000 × 0,8 = <b>Rp 17.600</b>'}],
+     w:'Kesalahan umum: "naik 10% lalu turun 20% = turun 10%". Salah: 20.000 × 0,9 = 18.000, bukan 17.600.'}],
+  kuad:[
+    {t:'Jumlah dan hasil kali akar',pts:['Persamaan kuadrat ax² + bx + c = 0 punya dua akar, kita sebut x₁ dan x₂.','Jumlah akar = −b/a dan hasil kali akar = c/a. Kalau satu akar sudah diketahui, akar lainnya tinggal dikurangkan.'],
+     f:'x₁ + x₂ = −b/a<br>x₁ · x₂ = c/a',
+     ex:[{q:'x² − 5x + 6 = 0, satu akarnya 2',s:'Jumlah akar = −(−5)/1 = 5<br>Akar lain = 5 − 2 = <b>3</b><br>Cek: 2 × 3 = 6 = c ✓'},{q:'x² + x − 12 = 0, satu akarnya 3',s:'Jumlah akar = −1/1 = −1<br>Akar lain = −1 − 3 = <b>−4</b><br>Cek: 3 × (−4) = −12 = c ✓'}],
+     w:''},
+    {t:'Awas tanda b',pts:['Rumus jumlah akar memakai −b, jadi tanda b dibalik dulu.','Akar boleh negatif. Cek hasil dengan hasil kali akar = c/a.'],
+     f:'x₁ + x₂ = −b/a',
+     ex:[{q:'x² − 2x − 15 = 0, satu akarnya 5',s:'Jumlah akar = −(−2)/1 = 2<br>Akar lain = 2 − 5 = <b>−3</b><br>Cek: 5 × (−3) = −15 = c ✓'}],
+     w:'Kesalahan umum: memakai b langsung, bukan −b.'},
+    {t:'Ada angka di depan x²',pts:['Kalau a bukan 1, tetap pakai −b/a dan c/a. Jangan lupa membagi dengan a.'],
+     f:'x₁ + x₂ = −b/a<br>x₁ · x₂ = c/a',
+     ex:[{q:'2x² − 10x + 12 = 0, satu akarnya 2',s:'Jumlah akar = −(−10)/2 = 5<br>Akar lain = 5 − 2 = <b>3</b><br>Cek: 2 × 3 = 6 = 12/2 ✓'},{q:'3x² + 3x − 18 = 0, satu akarnya 2',s:'Jumlah akar = −3/3 = −1<br>Akar lain = −1 − 2 = <b>−3</b><br>Cek: 2 × (−3) = −6 = −18/3 ✓'}],
+     w:''}]
+};
+function theoryBody(t,ch){
+  const th=THEORY[t][ch], tp=TOPIC[t];
+  return `<span class="label">📚 Materi · ${tp.name} · Bab ${ch+1} dari ${THEORY[t].length}</span>
+    <h1>${tp.ico} ${th.t}</h1>
+    <ul>${th.pts.map(p=>`<li>${p}</li>`).join('')}</ul>
+    <div class="formula">${th.f}</div>
+    ${th.ex.map(e=>`<div class="exm"><b class="exq">Contoh: ${e.q}</b>${e.s}</div>`).join('')}
+    ${th.w?`<div class="warnbox">⚠️ ${th.w}</div>`:''}`;
+}
+function showTheory(t,ch){
+  setNav(null);
+  app.innerHTML=`
+  <div class="card pop theory" style="margin-top:20px">
+    ${theoryBody(t,ch)}
+    <button class="btn" style="margin-top:14px" onclick="beginMission('${t}')">Mulai misi ▶</button>
+    <button class="iconbtn" style="margin-top:12px;width:auto;padding:10px 16px;font-weight:800" onclick="home()">Nanti aja</button>
+  </div>`;
+}
+/* Materi bisa dibuka lagi kapan saja (lembar di atas layar, misi tidak hilang) */
+function showSheet(t,ch){
+  document.querySelectorAll('.sheet').forEach(n=>n.remove());
+  const max=S.diff[t]-1, c=Math.min(ch,max);
+  const tabs=Array.from({length:max+1},(_,i)=>`<button class="iconbtn" style="width:auto;padding:8px 14px;font-weight:800;${i===c?'outline:3px solid var(--yellow)':''}" onclick="showSheet('${t}',${i})">Bab ${i+1}</button>`).join('');
+  const el=document.createElement('div');
+  el.className='sheet'; el.setAttribute('role','dialog'); el.setAttribute('aria-label','Materi '+TOPIC[t].name);
+  el.innerHTML=`<div class="sheetin theory">
+    <div class="between" style="margin-bottom:8px"><div class="row" style="gap:6px;flex-wrap:wrap">${tabs}</div>
+      <button class="iconbtn" onclick="closeSheet()" aria-label="Tutup materi">✕</button></div>
+    ${theoryBody(t,c)}
+    <button class="btn" style="margin-top:14px" onclick="closeSheet()">Tutup materi</button>
+  </div>`;
+  document.body.appendChild(el);
+  el.scrollTop=0;
+}
+function closeSheet(){document.querySelectorAll('.sheet').forEach(n=>n.remove());}
 
 function nextQ(){
   const it=M.queue[M.i];
@@ -386,7 +472,8 @@ function renderMission(){
     <span class="row" style="gap:6px"><button class="iconbtn" onclick="toggleSound()" aria-label="Suara">${SOUND?'🔊':'🔇'}</button><span class="chip">⚡ ${M.xpGain} XP</span></span>
   </div>
   <div style="margin:12px 0 4px" class="bar"><div style="width:${M.i/total*100}%"></div></div>
-  <div class="small">Soal ${M.i+1} dari ${total}${retry?' · <b>soal ulang</b>':''} · 🔥 combo ${M.combo}</div>
+  <div class="between"><div class="small">Soal ${M.i+1} dari ${total}${retry?' · <b>soal ulang</b>':''} · 🔥 combo ${M.combo}</div>
+    <button class="iconbtn" style="width:auto;height:auto;padding:6px 12px;font-weight:800;font-size:.8rem" onclick="showSheet('${M.topic}',${S.diff[M.topic]-1})">📚 Materi</button></div>
 
   <div class="row pop" style="margin-top:12px;align-items:flex-end">
     <div class="mascot"> ${mascot(M.mood)} </div>
@@ -503,7 +590,7 @@ function setNav(active){
 
 /* ---------- Beranda: peta dunia ---------- */
 function home(){
-  M=null;
+  M=null; closeSheet();
   if(!S.name){
     setNav(null);
     app.innerHTML=`
@@ -552,6 +639,12 @@ function home(){
         <div><div class="name">${s.name}</div><div class="sub">Segera hadir</div></div>
         <span class="play">🔒</span>
       </div>`).join('')}
+  </div>
+
+  <h2>📚 Materi</h2>
+  <div class="card" style="margin-top:4px">
+    <p class="small" style="margin:0 0 8px">Lupa rumusnya? Buka lagi materi kapan saja.</p>
+    <div class="row" style="flex-wrap:wrap;gap:8px">${Object.keys(TOPIC).map(t=>`<button class="iconbtn" style="width:auto;padding:8px 14px;font-weight:800" onclick="showSheet('${t}',${S.diff[t]-1})">${TOPIC[t].ico} ${TOPIC[t].name}</button>`).join('')}</div>
   </div>
 
   <h2>🎁 Lencana terbaru</h2>
